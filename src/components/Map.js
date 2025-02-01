@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Button, Box, Typography, Paper, Container } from '@mui/material';
 
-const googleMapsApiKey = process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY;
-
 const center = {
   lat: 34.9954,
   lng: 137.0060
@@ -21,16 +19,35 @@ const mapWrapperStyle = {
   position: 'relative'
 };
 
+async function fetchNearbyPlaces(location) {
+    const response = await fetch('https://<api-id>.execute-api.<region>.amazonaws.com/prod/places', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(location),
+    });
+
+    const data = await response.json();
+    return data.results;
+}
+
 function Map() {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [showCoordinates, setShowCoordinates] = useState(false);
+  const [places, setPlaces] = useState([]);
 
-  const handleMapClick = (event) => {
-    setMarkerPosition({
+  const handleMapClick = async (event) => {
+    const position = {
       lat: event.latLng.lat(),
       lng: event.latLng.lng()
-    });
+    };
+    setMarkerPosition(position);
     setShowCoordinates(false);
+
+    // Fetch nearby places
+    const placesData = await fetchNearbyPlaces(position);
+    setPlaces(placesData);
   };
 
   const handleShowCoordinates = () => {
@@ -45,17 +62,15 @@ function Map() {
             Immersive GeoGuesser
           </Typography>
           <Box sx={mapWrapperStyle}>
-            <LoadScript googleMapsApiKey={googleMapsApiKey}>
-              <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={center}
-                zoom={10}
-                onClick={handleMapClick}
-                streetViewControl={false}
-              >
-                {markerPosition && <Marker position={markerPosition} />}
-              </GoogleMap>
-            </LoadScript>
+            <GoogleMap
+              mapContainerStyle={containerStyle}
+              center={center}
+              zoom={10}
+              onClick={handleMapClick}
+              streetViewControl={false}
+            >
+              {markerPosition && <Marker position={markerPosition} />}
+            </GoogleMap>
           </Box>
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Button 
