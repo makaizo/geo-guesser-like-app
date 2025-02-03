@@ -22,9 +22,30 @@ const mapWrapperStyle = {
   position: 'relative'
 };
 
-function Map() {
+function Map({currentTab}) {
   const [markerPosition, setMarkerPosition] = useState(null);
   const [showCoordinates, setShowCoordinates] = useState(false);
+  const [score, setScore] = useState(null);
+
+  const calculateDistance = (lat1, lng1, lat2, lng2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; 
+  }
+
+  const calculateScore = (distance) => {
+    const maxDistance = 3000;
+    const minDistance = 0.005;
+
+    if(distance <= minDistance) return 100;
+    if(distance >= maxDistance) return 0;
+    const score = 100 * Math.exp(-35 * (distance - minDistance) / maxDistance);
+
+    return Number(score.toFixed(3));
+  } 
 
   const handleMapClick = (event) => {
     setMarkerPosition({
@@ -36,45 +57,62 @@ function Map() {
 
   const handleShowCoordinates = () => {
     setShowCoordinates(true);
+    if(markerPosition && currentTab){
+      const distance = calculateDistance(markerPosition.lat, markerPosition.lng, currentTab.lat, currentTab.lng);
+      const score = calculateScore(distance);
+      setScore({points: score, distance: distance.toFixed(2)});
+    }
   };
 
   return (
-    // <Box>
-    //   <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper elevation={3} sx={{ p: 2, mb: 4, height: "100%" }}>
-          {/* <Typography variant="h4" component="h1" gutterBottom align="center">
-            Immersive GeoGuesser
-          </Typography> */}
-          <Box sx={mapWrapperStyle}>
-            <LoadScript googleMapsApiKey={googleMapsApiKey}>
-              <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={center}
-                zoom={10}
-                onClick={handleMapClick}
-                streetViewControl={false}
-              >
-                {markerPosition && <Marker position={markerPosition} />}
-              </GoogleMap>
-            </LoadScript>
-          </Box>
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Button 
-              variant="contained" 
-              disabled={!markerPosition} 
-              onClick={handleShowCoordinates}
-            >
-              Show Coordinates
-            </Button>
-            {showCoordinates && markerPosition && (
+    <Paper elevation={3} sx={{ p: 2, mb: 4, height: "100%" }}>
+      <Box sx={mapWrapperStyle}>
+        <LoadScript googleMapsApiKey={googleMapsApiKey}>
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={center}
+            zoom={6}
+            onClick={handleMapClick}
+            streetViewControl={false}
+          >
+            {markerPosition && <Marker position={markerPosition} />}
+            {showCoordinates && currentTab &&
+              <Marker
+                position={{lat: currentTab.lat, lng: currentTab.lng }}
+                icon={'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'}
+              />
+            }
+          </GoogleMap>
+        </LoadScript>
+      </Box>
+      <Box sx={{ mt: 2, textAlign: 'center' }}>
+        <Button 
+          variant="contained" 
+          disabled={!markerPosition} 
+          onClick={handleShowCoordinates}
+        >
+          Show Coordinates
+        </Button>
+        {showCoordinates && markerPosition && (
+          <Box sx={{ mt: 2 }}>
+            <Typography>
+              Your Answer: {markerPosition.lat.toFixed(6)}, {markerPosition.lng.toFixed(6)}
+            </Typography>
+            {score && (
+              <>
               <Typography sx={{ mt: 1 }}>
-                Latitude: {markerPosition.lat.toFixed(6)}, Longitude: {markerPosition.lng.toFixed(6)}
+                {currentTab.name} / DISTANCE: {score.distance}km
               </Typography>
+              <Typography sx={{ mt: 1 }}>SCORE</Typography>
+              <Typography variant="h3" color="primary">
+                 {score.points.toFixed(3)}
+              </Typography>
+              </>
             )}
           </Box>
-        </Paper>
-    //   </Container>
-    // </Box>
+        )}
+      </Box>
+    </Paper>
   );
 }
 
