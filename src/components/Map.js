@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Button, Box, Typography, Paper, Container } from '@mui/material';
 
-const googleMapsApiKey = process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY;
+// const googleMapsApiKey = process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY;
+const googleMapsApiKey = "AIzaSyCpunZ4Sdv4Dw17OprnHVoUBuWg1ltukIE";
 
 const center = {
   lat: 34.9954,
@@ -38,12 +39,12 @@ function Map() {
   };
 
   return (
-    <Box>
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper elevation={3} sx={{ p: 2, mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center">
+    // <Box>
+    //   <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 2, mb: 4, height: "100%" }}>
+          {/* <Typography variant="h4" component="h1" gutterBottom align="center">
             Immersive GeoGuesser
-          </Typography>
+          </Typography> */}
           <Box sx={mapWrapperStyle}>
             <LoadScript googleMapsApiKey={googleMapsApiKey}>
               <GoogleMap
@@ -72,8 +73,8 @@ function Map() {
             )}
           </Box>
         </Paper>
-      </Container>
-    </Box>
+    //   </Container>
+    // </Box>
   );
 }
 
