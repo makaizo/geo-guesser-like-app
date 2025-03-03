@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Button, Box, Typography, Paper, Container } from '@mui/material';
 
 const googleMapsApiKey = process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY;
-// const googleMapsApiKey = "AIzaSyCpunZ4Sdv4Dw17OprnHVoUBuWg1ltukIE";
 
 const center = {
   lat: 34.9954,
@@ -22,47 +21,99 @@ const mapWrapperStyle = {
   position: 'relative'
 };
 
-function Map({currentTab}) {
-  const [markerPosition, setMarkerPosition] = useState(null);
-  const [showCoordinates, setShowCoordinates] = useState(false);
-  const [score, setScore] = useState(null);
+function Map({ currentTab }) {
+  const [markerPosition, setMarkerPosition] = useState(null)
+  const [showCoordinates, setShowCoordinates] = useState(false)
+  const [score, setScore] = useState(null)
+  const [timeRemaining, setTimeRemaining] = useState(45)
+  const [isTimerRunning, setIsTimerRunning] = useState(true)
+  const timerRef = useRef(null)
 
   const calculateDistance = (lat1, lng1, lat2, lng2) => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; 
+    const R = 6371
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLng = ((lng2 - lng1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
   }
 
   const calculateScore = (distance) => {
-    const maxDistance = 3000;
-    const minDistance = 0.005;
+    const maxDistance = 3000
+    const minDistance = 0.005
 
-    if(distance <= minDistance) return 100;
-    if(distance >= maxDistance) return 0;
-    const score = 100 * Math.exp(-35 * (distance - minDistance) / maxDistance);
+    if (distance <= minDistance) return 100
+    if (distance >= maxDistance) return 0
+    const score = 100 * Math.exp((-35 * (distance - minDistance)) / maxDistance)
 
-    return Number(score.toFixed(3));
-  } 
+    return Number(score.toFixed(3))
+  }
+
+  // Reset timer when tab changes
+  useEffect(() => {
+    setTimeRemaining(45)
+    setIsTimerRunning(true)
+    setShowCoordinates(false)
+    setMarkerPosition(null)
+    setScore(null)
+  }, [currentTab])
+
+  // Timer logic
+  useEffect(() => {
+    if (isTimerRunning) {
+      timerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            // Time's up
+            clearInterval(timerRef.current)
+            setIsTimerRunning(false)
+            if (!showCoordinates) {
+              handleTimeUp()
+            }
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+    }
+  }, [isTimerRunning, showCoordinates])
+
+  const handleTimeUp = () => {
+    setShowCoordinates(true)
+    if (markerPosition && currentTab) {
+      const distance = calculateDistance(markerPosition.lat, markerPosition.lng, currentTab.lat, currentTab.lng)
+      const calculatedScore = calculateScore(distance)
+      setScore({ points: calculatedScore, distance: distance.toFixed(2) })
+    } else {
+      setScore({ points: 0, distance: "N/A" })
+    }
+  }
 
   const handleMapClick = (event) => {
     setMarkerPosition({
       lat: event.latLng.lat(),
-      lng: event.latLng.lng()
-    });
-    setShowCoordinates(false);
-  };
+      lng: event.latLng.lng(),
+    })
+    setShowCoordinates(false)
+  }
 
   const handleShowCoordinates = () => {
-    setShowCoordinates(true);
-    if(markerPosition && currentTab){
-      const distance = calculateDistance(markerPosition.lat, markerPosition.lng, currentTab.lat, currentTab.lng);
-      const score = calculateScore(distance);
-      setScore({points: score, distance: distance.toFixed(2)});
+    setShowCoordinates(true)
+    setIsTimerRunning(false)
+    if (markerPosition && currentTab) {
+      const distance = calculateDistance(markerPosition.lat, markerPosition.lng, currentTab.lat, currentTab.lng)
+      const calculatedScore = calculateScore(distance)
+      setScore({ points: calculatedScore, distance: distance.toFixed(2) })
     }
-  };
+  }
 
   return (
     <Paper elevation={3} sx={{ p: 2, mb: 4, height: "100%" }}>
@@ -74,46 +125,70 @@ function Map({currentTab}) {
             zoom={6}
             onClick={handleMapClick}
             streetViewControl={false}
+            streetView={false}
           >
+            {/* Timer Display */}
+            <div
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                padding: "8px 12px",
+                borderRadius: "4px",
+                zIndex: 10,
+                fontWeight: "bold",
+                color: timeRemaining <= 10 ? "#d32f2f" : "#1976d2",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                fontSize: "1.1rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              ⏱️ {timeRemaining}s
+            </div>
+
             {markerPosition && <Marker position={markerPosition} />}
-            {showCoordinates && currentTab &&
+            {showCoordinates && currentTab && (
               <Marker
-                position={{lat: currentTab.lat, lng: currentTab.lng }}
-                icon={'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'}
+                position={{ lat: currentTab.lat, lng: currentTab.lng }}
+                icon={"http://maps.google.com/mapfiles/ms/icons/blue-dot.png"}
               />
-            }
+            )}
           </GoogleMap>
         </LoadScript>
       </Box>
-      <Box sx={{ mt: 2, textAlign: 'center' }}>
-        <Button 
-          variant="contained" 
-          disabled={!markerPosition} 
-          onClick={handleShowCoordinates}
-        >
+      <Box sx={{ mt: 2, textAlign: "center" }}>
+        <Button variant="contained" disabled={!markerPosition || timeRemaining === 0} onClick={handleShowCoordinates}>
           Show Coordinates
         </Button>
-        {showCoordinates && markerPosition && (
+        {showCoordinates && (
           <Box sx={{ mt: 2 }}>
-            <Typography>
-              Your Answer: {markerPosition.lat.toFixed(6)}, {markerPosition.lng.toFixed(6)}
-            </Typography>
+            {markerPosition ? (
+              <Typography>
+                Your Answer: {markerPosition.lat.toFixed(6)}, {markerPosition.lng.toFixed(6)}
+              </Typography>
+            ) : (
+              <Typography color="error">No location selected - Time's up!</Typography>
+            )}
             {score && (
               <>
-              <Typography sx={{ mt: 1 }}>
-                {currentTab.name} / DISTANCE: {score.distance}km
-              </Typography>
-              <Typography sx={{ mt: 1 }}>SCORE</Typography>
-              <Typography variant="h3" color="primary">
-                 {score.points.toFixed(3)}
-              </Typography>
+                <Typography sx={{ mt: 1 }}>
+                  {currentTab.name} / DISTANCE: {score.distance}km
+                </Typography>
+                <Typography sx={{ mt: 1 }}>SCORE</Typography>
+                <Typography variant="h3" color={timeRemaining === 0 && !markerPosition ? "error" : "primary"}>
+                  {score.points.toFixed(3)}
+                </Typography>
               </>
             )}
           </Box>
         )}
       </Box>
     </Paper>
-  );
+  )
 }
 
-export default Map;
+export default Map
+
