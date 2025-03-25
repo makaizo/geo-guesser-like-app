@@ -3,7 +3,6 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Button, Box, Typography, Paper, Container } from '@mui/material';
 
 const googleMapsApiKey = process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY;
-// const googleMapsApiKey = "AIzaSyDU0nuobi1icfukJ9Zyd8M6WqaU0WAv6hc";
 
 const center = {
   lat: 34.9954,
