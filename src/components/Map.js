@@ -3,6 +3,7 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Button, Box, Typography, Paper, Container } from '@mui/material';
 
 const googleMapsApiKey = process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY;
+// const googleMapsApiKey = "AIzaSyDU0nuobi1icfukJ9Zyd8M6WqaU0WAv6hc";
 
 const center = {
   lat: 34.9954,
@@ -21,13 +22,24 @@ const mapWrapperStyle = {
   position: 'relative'
 };
 
-function Map({ currentTab }) {
+function Map({ currentTab, difficultyParams, gameStarted }) {
   const [markerPosition, setMarkerPosition] = useState(null)
   const [showCoordinates, setShowCoordinates] = useState(false)
   const [score, setScore] = useState(null)
   const [timeRemaining, setTimeRemaining] = useState(45)
-  const [isTimerRunning, setIsTimerRunning] = useState(true)
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
   const timerRef = useRef(null)
+
+  
+  // Set default values if difficultyParams is not provided
+  const { maxDistance = 3000, minDistance = 0.005, zoom = 6 } = difficultyParams || {}
+
+  // Start timer when game starts
+  useEffect(() => {
+    if (gameStarted) {
+      setIsTimerRunning(true)
+    }
+  }, [gameStarted])
 
   const calculateDistance = (lat1, lng1, lat2, lng2) => {
     const R = 6371
@@ -41,8 +53,6 @@ function Map({ currentTab }) {
   }
 
   const calculateScore = (distance) => {
-    const maxDistance = 3000
-    const minDistance = 0.005
 
     if (distance <= minDistance) return 100
     if (distance >= maxDistance) return 0
@@ -53,12 +63,14 @@ function Map({ currentTab }) {
 
   // Reset timer when tab changes
   useEffect(() => {
-    setTimeRemaining(45)
-    setIsTimerRunning(true)
-    setShowCoordinates(false)
-    setMarkerPosition(null)
-    setScore(null)
-  }, [currentTab])
+    if (gameStarted){
+      setTimeRemaining(45)
+      setIsTimerRunning(true)
+      setShowCoordinates(false)
+      setMarkerPosition(null)
+      setScore(null)
+    }
+  }, [currentTab, gameStarted])
 
   // Timer logic
   useEffect(() => {
@@ -122,7 +134,7 @@ function Map({ currentTab }) {
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
-            zoom={6}
+            zoom={zoom}
             onClick={handleMapClick}
             streetViewControl={false}
             streetView={false}
