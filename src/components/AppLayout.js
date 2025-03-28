@@ -35,9 +35,9 @@ const tabSets = {
   C: [
     { label: "1: いいね", icon: <ThumbUpOutlinedIcon />, lat: 38.897720, lng: -77.036397, name: "アメリカ ワシントンD.C. ホワイトハウス" },
     { label: "2: ピース", icon: <ExpandMoreOutlinedIcon />, lat: -13.164535, lng: -72.544566, name: "ペルー マチュピチュ" },
-    { label: "3: イチバン", icon: <PanToolAltOutlinedIcon />, lat: -2.412239, lng: 34.848565, name: "タンザニア セレンゲティ国立公園" },
+    { label: "3: イチバン", icon: <PanToolAltOutlinedIcon />, lat: 48.8583, lng: 2.2945, name: "フランス パリ エッフェル塔" },
     { label: "4: つまむ", icon: <PinchOutlinedIcon />, lat: 25.195389, lng: 55.273003, name: "アラブ首長国連邦 ドバイ" },
-    { label: "5: でんわ", icon: <CallOutlinedIcon />, lat: -23.800528, lng: 152.292333, name: "オーストラリア グレートバリアリーフ" },
+    { label: "5: でんわ", icon: <CallOutlinedIcon />, lat: 41.4036, lng: 2.1744, name: "スペイン サグラダ・ファミリア" },
     // { label: "6: Special", icon: <StarOutlineOutlinedIcon />, lat: randomLocation.lat , lng: randomLocation.lng, name: "言問橋(東京スカイツリー)" },
   ],
 } 
