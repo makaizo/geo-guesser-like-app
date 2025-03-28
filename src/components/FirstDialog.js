@@ -4,20 +4,20 @@ import { Dialog, DialogTitle, DialogContent, DialogContentText, Button, Stack, T
 const difficultyOptions = [
   {
     id: "A",
-    label: "Easy",
-    description: "Larger radius, more forgiving scoring",
+    label: "東京旅行",
+    // description: "Larger radius, more forgiving scoring",
     color: "#4caf50", // green
   },
   {
     id: "B",
-    label: "Medium",
-    description: "Balanced difficulty",
+    label: "日本一周",
+    // description: "Balanced difficulty",
     color: "#ff9800", // orange
   },
   {
     id: "C",
-    label: "Hard",
-    description: "Small radius, precise scoring",
+    label: "世界一周",
+    // description: "Small radius, precise scoring",
     color: "#f44336", // red
   },
 ]
@@ -37,12 +37,12 @@ export default function FirstDialog({ open, onSelectDifficulty }) {
     >
       <DialogTitle sx={{ textAlign: "center", pt: 4 }}>
         <Typography variant="h4" component="div" fontWeight="bold">
-          Select Difficulty
+          モード選択
         </Typography>
       </DialogTitle>
       <DialogContent>
         <DialogContentText sx={{ textAlign: "center", mb: 3 }}>
-          Choose a difficulty level to start the game
+          ARグラスで見たい景色を選んでね
         </DialogContentText>
 
         <Stack spacing={2} sx={{ mb: 4 }}>

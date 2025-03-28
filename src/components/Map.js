@@ -3,12 +3,11 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Button, Box, Typography, Paper, Container } from '@mui/material';
 
 const googleMapsApiKey = process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY;
-// const googleMapsApiKey = "AIzaSyDU0nuobi1icfukJ9Zyd8M6WqaU0WAv6hc";
 
-const center = {
-  lat: 34.9954,
-  lng: 137.0060
-};
+// const center = {
+//   lat: 34.9954,
+//   lng: 137.0060
+// };
 
 const containerStyle = {
   width: '100%',
@@ -32,8 +31,12 @@ function Map({ currentTab, difficultyParams, gameStarted }) {
 
   
   // Set default values if difficultyParams is not provided
-  const { maxDistance = 3000, minDistance = 0.005, zoom = 6 } = difficultyParams || {}
+  const { maxDistance = 3000, minDistance = 0.005, zoom = 6, params = -50, centerlat = 34.9954, centerlng = 137.0060 } = difficultyParams || {}
 
+  const center ={
+    lat : centerlat,
+    lng : centerlng
+  }
   // Start timer when game starts
   useEffect(() => {
     if (gameStarted) {
@@ -56,7 +59,7 @@ function Map({ currentTab, difficultyParams, gameStarted }) {
 
     if (distance <= minDistance) return 100
     if (distance >= maxDistance) return 0
-    const score = 100 * Math.exp((-35 * (distance - minDistance)) / maxDistance)
+    const score = 100 * Math.exp((params * (distance - minDistance)) / maxDistance)
 
     return Number(score.toFixed(3))
   }
@@ -173,7 +176,7 @@ function Map({ currentTab, difficultyParams, gameStarted }) {
       </Box>
       <Box sx={{ mt: 2, textAlign: "center" }}>
         <Button variant="contained" disabled={!markerPosition || timeRemaining === 0} onClick={handleShowCoordinates}>
-          Show Coordinates
+          答え合わせ
         </Button>
         {showCoordinates && (
           <Box sx={{ mt: 2 }}>
@@ -187,9 +190,9 @@ function Map({ currentTab, difficultyParams, gameStarted }) {
             {score && (
               <>
                 <Typography sx={{ mt: 1 }}>
-                  {currentTab.name} / DISTANCE: {score.distance}km
+                  {currentTab.name} / 距離: {score.distance}km
                 </Typography>
-                <Typography sx={{ mt: 1 }}>SCORE</Typography>
+                <Typography sx={{ mt: 1 }}>得点</Typography>
                 <Typography variant="h3" color={timeRemaining === 0 && !markerPosition ? "error" : "primary"}>
                   {score.points.toFixed(3)}
                 </Typography>
